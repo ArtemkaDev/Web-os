@@ -1,0 +1,10 @@
+{
+  "name": "aplocoinos",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "rollup --format umd --name VtWindow --sourcemap --input script/vtwindow.js --file build/vtwindow.js && sass css/taskbar.scss css/taskbar.css"
+  },
+  "author": "",
+  "license": "ISC"
+}

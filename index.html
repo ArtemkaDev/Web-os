@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AploCoin Os</title>
+    <link rel="stylesheet" href="css/taskbar.css">
+    <link rel="stylesheet" href="css/vtwindow-theme.osx.css">
+    <script src="build/vtwindow.js"></script>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="css/materialize.min.css">
+</head>
+
+<body>
+
+<div class="menu-bar">
+    <div class="left">
+        <img src="image/Apple_logo_white.svg.png" class="apple-logo" alt="">
+        <span class="menus active">Finder</span>
+        <span class="menus">File</span>
+        <span class="menus">Edit</span>
+        <span class="menus">View</span>
+        <span class="menus">Go</span>
+        <span class="menus">Window</span>
+        <span class="menus">Help</span>
+    </div>
+    <div class="right">
+        <div class="menu-ico">
+            <img src="image/Sound_Volume.png" alt="" class="vol">
+        </div>
+        <div class="menu-ico">
+            <img src="image/Control_Center_Icon.png" alt="" class="control-center">
+        </div>
+        <div class="menu-time" id="menu-time">
+            <!-- Time will be inserted here by JavaScript -->
+        </div>
+    </div>
+</div>
+
+
+<div class="dock">
+    <div class="dock-container">
+        <li class="li-1">
+            <div class="name">CryptoPrices</div>
+            <img class="ico" src="image/Apps/Finance_1.png" alt="">
+        </li>
+        <li class="li-2">
+            <div class="name">Finder</div>
+            <img class="ico" src="image/Apps/Finder_2.png" alt="">
+        </li>
+        <li class="li-bin li-15">
+            <div class="name">Bin</div>
+            <img class="ico ico-bin" src="image/Apps/Trash_15.png" alt="">
+        </li>
+
+    </div>
+</div>
+
+
+<template id="osx">
+    <div role="dialog" aria-label="" class="vt-window-osx">
+        <div name="header" class="">
+            <span name="title">${content.title}</span>
+            <span name="controls">
+          <button name="close" class="" title="Close"></button>
+          <button name="minimize" class="" title="Minimize"></button>
+          <button name="maximize" class="" title="Maximize"></button>
+          <button name="popout" class="" title="Deattatch"></button>
+        </span>
+        </div>
+        <div name="body">
+            ${content.body}
+            <input type="text">
+        </div>
+        <div name="footer">
+            <div name="grab"></div>
+        </div>
+    </div>
+</template>
+
+<script>
+    const appConfigs = [
+        { button: "li-1", app_html: "finance.html" },
+        { button: "li-2", app_html: null },
+        { button: "li-15", app_html: null }
+    ];
+
+    const dockItems = document.querySelectorAll('.dock-container li');
+    const windows = [];
+
+    appConfigs.forEach((appConfig, index) => {
+        let isWindowMounted = false;
+
+        const dockItem = dockItems[index];
+        const appWindow = new VtWindow(null, {
+            template: osx.innerHTML,
+            resizable: true,
+            maximizable: true,
+            onHide: () => {
+                dockItem.classList.remove('li-selected');
+                dockItem.classList.remove('li-hided');
+                isWindowMounted = false;
+            }
+        });
+
+        appWindow.top = 220;
+        appWindow.left = 220;
+        appWindow.width = 374;
+        appWindow.height = 206;
+
+        if (appConfig.app_html) {
+            dockItem.addEventListener('click', function () {
+                if (!isWindowMounted) {
+                    fetch(`apps/${appConfig.app_html}`)
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const title = doc.title;
+                            const body = html;
+                            appWindow.setTitle(title);
+                            appWindow.setBody(body);
+                            appWindow.mount();
+                            appWindow.focus();
+                            appWindow.show();
+                            dockItem.classList.add('li-selected');
+                            dockItem.classList.remove('li-hided');
+                            isWindowMounted = true;
+                        })
+                        .catch(error => {
+                            console.error('Error loading app content:', error);
+                        });
+                } else {
+                    if (!appWindow.isMinimized) {
+                        appWindow.minimize();
+                        dockItem.classList.remove('li-selected');
+                        dockItem.classList.add('li-hided');
+                    } else {
+                        appWindow.minimize();
+                        dockItem.classList.add('li-selected');
+                        dockItem.classList.remove('li-hided');
+                    }
+                }
+            });
+        }
+
+        windows.push({
+            window: appWindow,
+            dockItem: dockItem,
+            isOpen: false,
+            isMinimized: false
+        });
+    });
+</script>
+<script type="text/javascript" src="script/time.js"></script>
+</body>
+
+</html>
